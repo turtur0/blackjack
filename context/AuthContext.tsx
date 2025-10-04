@@ -1,8 +1,10 @@
+// contexts/AuthContext.tsx
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface User {
+  id: string;
   username: string;
   chips: number;
 }
@@ -13,6 +15,7 @@ interface AuthContextType {
   login: (token: string, user: User) => void;
   logout: () => void;
   updateChips: (chips: number) => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,8 +31,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (savedToken && savedUser) {
       setToken(savedToken);
       setUser(savedUser);
+      // Refresh user data from database on mount
+      refreshUserData(savedToken, savedUser.id);
     }
   }, []);
+
+  const refreshUserData = async (authToken: string, userId: string) => {
+    try {
+      const response = await fetch('/api/user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: authToken, userId }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+        (window as any).authUser = data.user;
+      }
+    } catch (error) {
+      console.error('Failed to refresh user data:', error);
+    }
+  };
 
   const login = (newToken: string, newUser: User) => {
     setToken(newToken);
@@ -54,8 +77,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const refreshUser = async () => {
+    if (token && user) {
+      await refreshUserData(token, user.id);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, updateChips }}>
+    <AuthContext.Provider value={{ user, token, login, logout, updateChips, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

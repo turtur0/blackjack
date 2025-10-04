@@ -1,26 +1,22 @@
 'use client';
 
-import { useState } from 'react';
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../context/AuthContext';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function SignUpPage() {
   const router = useRouter();
   const { login } = useAuth();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+    confirmPassword: ''
+  });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -29,29 +25,34 @@ export default function SignUpPage() {
     setError('');
 
     // Validate passwords match
-    if (password !== confirmPassword) {
+    if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
 
     // Validate password length
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
+    // Validate username length
+    if (formData.username.length < 3) {
+      setError('Username must be at least 3 characters long');
       return;
     }
 
     setLoading(true);
 
     try {
-      const response = await fetch('/api/auth', {
+      const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          action: 'signup',
-          username,
-          password,
+          username: formData.username,
+          password: formData.password,
         }),
       });
 
@@ -63,10 +64,8 @@ export default function SignUpPage() {
         return;
       }
 
-      // Store token and user in auth context
+      // Sign up successful - login and redirect
       login(data.token, data.user);
-
-      // Redirect to home page
       router.push('/');
     } catch (err) {
       setError('An error occurred. Please try again.');
@@ -75,12 +74,12 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-800 to-green-950 p-4">
-      <div className={cn("flex flex-col gap-6 w-full max-w-md")}>
-        <Card>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="flex flex-col gap-6 w-full max-w-md">
+        <Card className="bg-card border-border">
           <CardHeader className="text-center">
-            <CardTitle className="text-xl">Create an account</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-xl text-card-foreground">Create an account</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Sign up to start playing Blackjack
             </CardDescription>
           </CardHeader>
@@ -88,57 +87,64 @@ export default function SignUpPage() {
             <form onSubmit={handleSubmit}>
               <div className="grid gap-6">
                 {error && (
-                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                    {error}
-                  </div>
+                  <Alert variant="destructive">
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
                 )}
+
                 <div className="grid gap-6">
                   <div className="grid gap-3">
-                    <Label htmlFor="username">Username</Label>
+                    <Label htmlFor="username" className="text-card-foreground">Username</Label>
                     <Input
                       id="username"
                       type="text"
                       placeholder="Choose a username"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      value={formData.username}
+                      onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                      disabled={loading}
                       required
+                      className="bg-background border-input text-foreground"
                     />
                   </div>
                   <div className="grid gap-3">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password" className="text-card-foreground">Password</Label>
                     <Input
                       id="password"
                       type="password"
                       placeholder="Create a password (min 6 characters)"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      disabled={loading}
                       required
+                      className="bg-background border-input text-foreground"
                     />
                   </div>
                   <div className="grid gap-3">
-                    <Label htmlFor="confirm-password">Confirm Password</Label>
+                    <Label htmlFor="confirmPassword" className="text-card-foreground">Confirm Password</Label>
                     <Input
-                      id="confirm-password"
+                      id="confirmPassword"
                       type="password"
-                      placeholder="Confirm your password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Re-enter your password"
+                      value={formData.confirmPassword}
+                      onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                      disabled={loading}
                       required
+                      className="bg-background border-input text-foreground"
                     />
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? 'Creating account...' : 'Sign Up'}
                   </Button>
                 </div>
-                <div className="text-center text-sm">
+
+                <div className="text-center text-sm text-muted-foreground">
                   Already have an account?{" "}
-                  <button
-                    type="button"
-                    onClick={() => router.push('/login')}
-                    className="underline underline-offset-4 hover:text-primary"
+                  <a
+                    href="/login"
+                    className="underline underline-offset-4 hover:text-primary text-card-foreground"
                   >
                     Login
-                  </button>
+                  </a>
                 </div>
               </div>
             </form>

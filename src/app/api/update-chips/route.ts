@@ -1,24 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MongoClient, ObjectId } from 'mongodb';
-import jwt from 'jsonwebtoken';
-
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-const DB_NAME = 'blackjack';
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
-
-let client: MongoClient | null = null;
-
-async function getDatabase() {
-  if (!client) {
-    client = new MongoClient(MONGODB_URI);
-    await client.connect();
-  }
-  return client.db(DB_NAME);
-}
+import { ObjectId } from 'mongodb';
+import clientPromise from '../../../../lib/mongodb';
 
 export async function POST(request: NextRequest) {
   try {
-    const { token, chips } = await request.json();
+    const body = await request.json();
+    const { token, chips, userId } = body;
 
     if (!token) {
       return NextResponse.json(
@@ -27,24 +14,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify token
-    let decoded: any;
-    try {
-      decoded = jwt.verify(token, JWT_SECRET);
-    } catch (err) {
+    if (!userId) {
       return NextResponse.json(
-        { error: 'Invalid token' },
-        { status: 401 }
+        { error: 'User ID required' },
+        { status: 400 }
       );
     }
 
-    const db = await getDatabase();
+    if (typeof chips !== 'number' || chips < 0) {
+      return NextResponse.json(
+        { error: 'Invalid chip amount' },
+        { status: 400 }
+      );
+    }
+
+    const client = await clientPromise;
+    const db = client.db('blackjack');
     const users = db.collection('users');
 
     // Update user's chips
     const result = await users.updateOne(
-      { _id: new ObjectId(decoded.userId) },
-      { $set: { chips } }
+      { _id: new ObjectId(userId) },
+      { $set: { chips: chips } }
     );
 
     if (result.matchedCount === 0) {
@@ -54,9 +45,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Fetch updated user to return current data
+    const updatedUser = await users.findOne({ _id: new ObjectId(userId) });
+
     return NextResponse.json({
       message: 'Chips updated successfully',
-      chips,
+      chips: updatedUser?.chips || chips,
     });
   } catch (error) {
     console.error('Update chips error:', error);
