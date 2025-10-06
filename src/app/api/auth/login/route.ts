@@ -1,4 +1,3 @@
-// app/api/auth/login/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '../../../../../lib/mongodb';
 import bcrypt from 'bcryptjs';
@@ -18,10 +17,10 @@ export async function POST(req: NextRequest) {
 
     const client = await clientPromise;
     const db = client.db('blackjack');
+    const users = db.collection('users');
 
     // Find user
-    const user = await db.collection('users').findOne({ username });
-
+    const user = await users.findOne({ username });
     if (!user) {
       return NextResponse.json(
         { error: 'Invalid username or password' },
@@ -29,9 +28,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check password
+    // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password);
-
     if (!isPasswordValid) {
       return NextResponse.json(
         { error: 'Invalid username or password' },
@@ -39,22 +37,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Generate simple token
     const token = uuidv4();
 
-    return NextResponse.json(
-      {
-        message: 'Login successful',
-        token,
-        user: {
-          id: user._id.toString(),
-          username: user.username,
-          chips: user.chips,
-        },
+    return NextResponse.json({
+      message: 'Login successful',
+      token,
+      user: {
+        id: user._id.toString(),
+        username: user.username,
+        chips: user.chips,
       },
-      { status: 200 }
-    );
-  } catch (error: any) {
+    });
+  } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

@@ -1,4 +1,3 @@
-// models/GameHistory.ts
 import mongoose, { Schema, model, models } from 'mongoose';
 
 export interface IGameHistory extends mongoose.Document {
@@ -38,13 +37,13 @@ const GameHistorySchema = new Schema<IGameHistory>({
     type: Number,
     required: true,
     min: 0,
-    max: 21,
+    max: 50, // Allow bust scores over 21
   },
   dealerScore: {
     type: Number,
     required: true,
     min: 0,
-    max: 21,
+    max: 50, // Allow bust scores over 21
   },
   result: {
     type: String,
@@ -62,7 +61,7 @@ const GameHistorySchema = new Schema<IGameHistory>({
   },
 });
 
-// Index for efficient querying
+// Compound index for efficient querying
 GameHistorySchema.index({ userId: 1, date: -1 });
 
 const GameHistory = models.GameHistory || model<IGameHistory>('GameHistory', GameHistorySchema);

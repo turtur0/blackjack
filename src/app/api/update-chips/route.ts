@@ -4,9 +4,9 @@ import clientPromise from '../../../../lib/mongodb';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { token, chips, userId } = body;
+    const { token, chips, userId } = await request.json();
 
+    // Validation
     if (!token) {
       return NextResponse.json(
         { error: 'Authentication required' },
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     // Update user's chips
     const result = await users.updateOne(
       { _id: new ObjectId(userId) },
-      { $set: { chips: chips } }
+      { $set: { chips } }
     );
 
     if (result.matchedCount === 0) {
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch updated user to return current data
+    // Fetch updated user
     const updatedUser = await users.findOne({ _id: new ObjectId(userId) });
 
     return NextResponse.json({

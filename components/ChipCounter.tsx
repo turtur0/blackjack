@@ -3,13 +3,40 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-export default function ChipCounter({ chips }: { chips: number }) {
+interface ChipCounterProps {
+    chips: number;
+}
+
+export default function ChipCounter({ chips }: ChipCounterProps) {
     const { user, token, updateChips, refreshUser } = useAuth();
     const [amount, setAmount] = useState<string>('');
     const [showModal, setShowModal] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
+
+    const displayChips = user?.chips ?? chips;
+
+    const resetModalState = () => {
+        setAmount('');
+        setError('');
+        setSuccess(false);
+    };
+
+    const openModal = () => {
+        if (!user) {
+            setError('Please login to add chips');
+            setTimeout(() => setError(''), 3000);
+            return;
+        }
+        setShowModal(true);
+        resetModalState();
+    };
+
+    const closeModal = () => {
+        setShowModal(false);
+        resetModalState();
+    };
 
     const handleAddChips = async () => {
         if (!user || !token) {
@@ -27,7 +54,6 @@ export default function ChipCounter({ chips }: { chips: number }) {
         setError('');
 
         try {
-            // Calculate new chip total
             const newChips = user.chips + numAmount;
 
             const response = await fetch('/api/update-chips', {
@@ -36,62 +62,38 @@ export default function ChipCounter({ chips }: { chips: number }) {
                 body: JSON.stringify({ token, chips: newChips, userId: user.id }),
             });
 
-            const data = await response.json();
-
             if (!response.ok) {
+                const data = await response.json();
                 setError(data.error || 'Failed to add chips');
-                setLoading(false);
                 return;
             }
 
-            // Update chips in auth context
             updateChips(newChips);
-
-            // Refresh user data from database to ensure sync
             await refreshUser();
 
             setSuccess(true);
             setTimeout(() => {
-                setAmount('');
-                setShowModal(false);
-                setSuccess(false);
+                closeModal();
             }, 1500);
-
-            setLoading(false);
         } catch (err) {
             console.error('Error adding chips:', err);
             setError('An error occurred while adding chips');
+        } finally {
             setLoading(false);
         }
     };
 
-    const openModal = () => {
-        if (!user) {
-            setError('Please login to add chips');
-            setTimeout(() => setError(''), 3000);
-            return;
-        }
-        setShowModal(true);
-        setError('');
-        setSuccess(false);
-    };
-
-    const closeModal = () => {
-        setShowModal(false);
-        setAmount('');
-        setError('');
-        setSuccess(false);
-    };
-
     const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-        // Only close if clicking the backdrop itself, not the modal content
         if (e.target === e.currentTarget) {
             closeModal();
         }
     };
 
-    // Display the chip count from user context if logged in, otherwise use prop
-    const displayChips = user ? user.chips : chips;
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' && !loading && !success && amount) {
+            handleAddChips();
+        }
+    };
 
     return (
         <>
@@ -141,15 +143,12 @@ export default function ChipCounter({ chips }: { chips: number }) {
                                 type="number"
                                 value={amount}
                                 onChange={(e) => setAmount(e.target.value)}
+                                onKeyDown={handleKeyDown}
                                 placeholder="Enter amount"
                                 className="w-full px-3 py-2 border rounded text-black bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
                                 min="1"
                                 disabled={loading || success}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && !loading && !success) {
-                                        handleAddChips();
-                                    }
-                                }}
+                                autoFocus
                             />
                         </div>
 

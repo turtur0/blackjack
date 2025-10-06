@@ -1,11 +1,12 @@
-// app/api/game/save/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '../../../../../lib/mongodb';
 import { ObjectId } from 'mongodb';
 
+const VALID_RESULTS = ['win', 'loss', 'push', 'blackjack'] as const;
+
 export async function POST(req: NextRequest) {
     try {
-        // Get token from Authorization header
+        // Authentication check
         const authHeader = req.headers.get('authorization');
         const token = authHeader?.replace('Bearer ', '');
 
@@ -16,7 +17,16 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const { bet, playerScore, dealerScore, result, chipsWon, username, userId, chipsAfter } = await req.json();
+        const {
+            bet,
+            playerScore,
+            dealerScore,
+            result,
+            chipsWon,
+            username,
+            userId,
+            chipsAfter
+        } = await req.json();
 
         // Validation
         if (bet === undefined || playerScore === undefined || dealerScore === undefined || !result) {
@@ -26,7 +36,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        if (!['win', 'loss', 'push', 'blackjack'].includes(result)) {
+        if (!VALID_RESULTS.includes(result)) {
             return NextResponse.json(
                 { error: 'Invalid result value' },
                 { status: 400 }
@@ -43,9 +53,8 @@ export async function POST(req: NextRequest) {
         const client = await clientPromise;
         const db = client.db('blackjack');
 
-        // Get current user's chips to verify they match what we expect
+        // Verify user exists
         const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
-
         if (!user) {
             return NextResponse.json(
                 { error: 'User not found' },
@@ -53,8 +62,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Use the chipsAfter value sent from the client (chips have already been updated)
-        // Don't modify chips here - they've already been updated in the update-chips endpoint
+        // Use provided chipsAfter or fall back to user's current chips
         const finalChipsAfter = chipsAfter !== undefined ? chipsAfter : user.chips;
 
         // Save game history
@@ -66,7 +74,7 @@ export async function POST(req: NextRequest) {
             playerScore,
             dealerScore,
             result,
-            chipsWon, // This should be the net change: positive for wins, negative for losses
+            chipsWon,
             chipsAfter: finalChipsAfter,
         });
 
@@ -80,7 +88,7 @@ export async function POST(req: NextRequest) {
             },
             { status: 201 }
         );
-    } catch (error: any) {
+    } catch (error) {
         console.error('Save game error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Blackjack Game
 
-## Getting Started
+A full-stack web application implementing the classic casino card game Blackjack, featuring user authentication, game history tracking, and AI-powered gameplay assistance.
 
-First, run the development server:
+🔗 **Live Demo:** [Your Vercel URL here]
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Core Gameplay
+- Fully functional Blackjack game following standard casino rules
+- Smooth card animations and intuitive UI
+- Real-time game state management
+- Hit and Stand actions with immediate feedback
+- Automatic dealer play following casino rules (hit on 16, stand on 17)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+![Gameplay Demo](./public/images/gameplay.gif)
 
-## Learn More
+### User Authentication
+- Username and password authentication system
+- JWT-based session management
+- Secure password hashing
+- 500 starting chips for new users
+- Persistent login sessions
 
-To learn more about Next.js, take a look at the following resources:
+![Login Page](./public/images/login.png)
+![Signup Page](./public/images/signup.png)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Chip Management
+- Real-time chip balance tracking
+- Bet placement system with validation
+- Automatic chip updates after each hand
+- Refresh-safe implementation (chips deducted immediately, games saved as provisional losses)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+![Betting System](./public/images/chip-management.gif)
 
-## Deploy on Vercel
+### Game History
+- Comprehensive statistics dashboard
+- Win/loss/push tracking
+- Net profit calculations
+- Detailed game log with timestamps
+- Paginated history view
+- Responsive table/card layout for all devices
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+![History Page](./public/images/history.gif)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### AI Assistant
+- Gemini API integration for gameplay suggestions
+- Strategic advice based on current hand
+- Visual highlighting of recommended actions
+- Real-time decision support
+
+![AI Assistant](./public/images/ai-assistan.gif)
+
+### Responsive Design
+- Mobile-first approach
+- Adaptive layouts for all screen sizes
+- Touch-friendly controls
+- Optimized for phones, tablets, and desktops
+
+![Mobile View](./public/images/mobile.gif)
+
+---
+
+## Tech Stack
+
+**Frontend:**
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- shadcn/ui components
+
+**Backend:**
+- Next.js API Routes
+- MongoDB (database)
+- JWT authentication
+- Gemini API (AI assistant)
+
+**Deployment:**
+- Vercel
+
+---
+
+## Asumptions & Simplifications
+- Infinite deck: Cards are drawn with constant probability (no deck tracking or shuffling)
+- Limited actions: Only Hit and Stand are available (no Split, Double Down, or Insurance)
+- Client-side gameplay: Game logic runs on the client; only chips and history sync with server
+- Refresh handling: If a player refreshes during an active game, the bet is not loss since games are only saved when completed
+- Dealer visibility: Dealer shows only one card initially (standard casino rules)

@@ -1,17 +1,25 @@
 import React, { useState, useEffect } from 'react';
 
-export default function BetControls({ chips, onBet }: { chips: number; onBet: (bet: number) => void }) {
-    const [bet, setBet] = useState<number>(10);
+interface BetControlsProps {
+    chips: number;
+    onBet: (bet: number) => void;
+}
+
+const DEFAULT_BET = 10;
+
+export default function BetControls({ chips, onBet }: BetControlsProps) {
+    const [bet, setBet] = useState<number>(DEFAULT_BET);
 
     // Reset bet to valid value if chips change
     useEffect(() => {
         if (bet > chips) {
-            setBet(Math.min(10, chips));
+            setBet(Math.min(DEFAULT_BET, chips));
         }
-    }, [chips]);
+    }, [chips, bet]);
 
     const handleBetChange = (value: string) => {
         const numValue = parseInt(value);
+
         if (isNaN(numValue) || numValue < 0) {
             setBet(0);
         } else if (numValue > chips) {
@@ -27,6 +35,8 @@ export default function BetControls({ chips, onBet }: { chips: number; onBet: (b
         }
     };
 
+    const isValidBet = bet > 0 && bet <= chips && chips > 0;
+
     return (
         <div className="flex gap-2 items-center">
             <input
@@ -39,8 +49,8 @@ export default function BetControls({ chips, onBet }: { chips: number; onBet: (b
                 placeholder="Bet amount"
             />
             <button
-                className="px-3 py-2 rounded bg-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition duration-200"
-                disabled={bet <= 0 || bet > chips || chips === 0}
+                className="px-3 py-2 rounded bg-yellow-500 text-black disabled:opacity-50 disabled:cursor-not-allowed hover:bg-yellow-400 transition duration-200"
+                disabled={!isValidBet}
                 onClick={handlePlaceBet}
             >
                 Place Bet

@@ -1,4 +1,3 @@
-// app/api/user/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import clientPromise from '../../../../lib/mongodb';
@@ -18,7 +17,6 @@ export async function POST(request: NextRequest) {
         const db = client.db('blackjack');
         const users = db.collection('users');
 
-        // Fetch user from database
         const user = await users.findOne({ _id: new ObjectId(userId) });
 
         if (!user) {

@@ -1,8 +1,13 @@
-// app/api/auth/signup/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '../../../../../lib/mongodb';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
+
+const VALIDATION = {
+  MIN_USERNAME_LENGTH: 3,
+  MIN_PASSWORD_LENGTH: 6,
+  INITIAL_CHIPS: 1000,
+};
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,26 +21,26 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (username.length < 3) {
+    if (username.length < VALIDATION.MIN_USERNAME_LENGTH) {
       return NextResponse.json(
-        { error: 'Username must be at least 3 characters long' },
+        { error: `Username must be at least ${VALIDATION.MIN_USERNAME_LENGTH} characters long` },
         { status: 400 }
       );
     }
 
-    if (password.length < 6) {
+    if (password.length < VALIDATION.MIN_PASSWORD_LENGTH) {
       return NextResponse.json(
-        { error: 'Password must be at least 6 characters long' },
+        { error: `Password must be at least ${VALIDATION.MIN_PASSWORD_LENGTH} characters long` },
         { status: 400 }
       );
     }
 
     const client = await clientPromise;
     const db = client.db('blackjack');
+    const users = db.collection('users');
 
-    // Check if user already exists
-    const existingUser = await db.collection('users').findOne({ username });
-
+    // Check if user exists
+    const existingUser = await users.findOne({ username });
     if (existingUser) {
       return NextResponse.json(
         { error: 'Username already exists' },
@@ -47,15 +52,14 @@ export async function POST(req: NextRequest) {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create new user
-    const result = await db.collection('users').insertOne({
+    // Create user
+    const result = await users.insertOne({
       username,
       password: hashedPassword,
-      chips: 1000,
+      chips: VALIDATION.INITIAL_CHIPS,
       createdAt: new Date(),
     });
 
-    // Generate simple token
     const token = uuidv4();
 
     return NextResponse.json(
@@ -65,12 +69,12 @@ export async function POST(req: NextRequest) {
         user: {
           id: result.insertedId.toString(),
           username,
-          chips: 1000,
+          chips: VALIDATION.INITIAL_CHIPS,
         },
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error('Signup error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
