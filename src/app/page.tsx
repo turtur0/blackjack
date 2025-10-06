@@ -368,7 +368,7 @@ export default function GamePage() {
                             </div>
                             <div className="mt-2">
                                 {state.dealer.length > 0 ? (
-                                    <>(<strong>{bestHandValue(state.dealer).value}</strong>) Dealer</>
+                                    <><strong>{bestHandValue(state.dealer).value}</strong> Dealer</>
                                 ) : (
                                     <>Dealer</>
                                 )}
@@ -398,7 +398,7 @@ export default function GamePage() {
                             </div>
                             <div className="mt-2">
                                 {state.player.length > 0 ? (
-                                    <>(<strong>{bestHandValue(state.player).value}</strong>) Me</>
+                                    <><strong>{bestHandValue(state.player).value}</strong> Me</>
                                 ) : (
                                     <>Me</>
                                 )}

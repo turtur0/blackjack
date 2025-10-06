@@ -11,7 +11,7 @@ const GameSchema = new Schema({
 const UserSchema = new Schema({
   username: { type: String, unique: true },
   password: String, // hashed
-  chips: { type: Number, default: 1000 },
+  chips: { type: Number, default: 500 },
   stats: [GameSchema],
 });
 
