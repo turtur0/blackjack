@@ -2,7 +2,7 @@
 
 A full-stack web application implementing the classic casino card game Blackjack, featuring user authentication, game history tracking, and AI-powered gameplay assistance.
 
-🔗 **Live Demo:** [Your Vercel URL here]
+🔗 **Live Demo:** https://blackjack-wine.vercel.app/
 
 ---
 
@@ -89,3 +89,6 @@ A full-stack web application implementing the classic casino card game Blackjack
 - Client-side gameplay: Game logic runs on the client; only chips and history sync with server
 - Refresh handling: If a player refreshes during an active game, the bet is not loss since games are only saved when completed
 - Dealer visibility: Dealer shows only one card initially (standard casino rules)
+
+## Note
+- Changed to Tailwind v3 right before deployment to be compatiable with Turbopack, so ui may look slightly different from recorded gifs and deployed page
