@@ -21,8 +21,7 @@ A full-stack web application implementing the classic casino card game Blackjack
 - Username and password authentication system
 - JWT-based session management
 - Secure password hashing
-- 500 starting chips for new users
-- Persistent login sessions
+- 1000 starting chips for new users
 
 ![Login Page](./public/images/login.png)
 ![Signup Page](./public/images/signup.png)
@@ -31,7 +30,6 @@ A full-stack web application implementing the classic casino card game Blackjack
 - Real-time chip balance tracking
 - Bet placement system with validation
 - Automatic chip updates after each hand
-- Refresh-safe implementation (chips deducted immediately, games saved as provisional losses)
 
 ![Betting System](./public/images/chip-management.gif)
 
