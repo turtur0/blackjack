@@ -379,7 +379,7 @@ export default function GamePage() {
                     cards.map((card, index) => (
                         <div
                             key={card.id}
-                            className="animate-slideIn flex-shrink-0"
+                            className="animate-slideIn opacity-0 flex-shrink-0"
                             style={{ animationDelay: `${index * 150}ms` }}
                         >
                             <CardView card={card} />
@@ -428,7 +428,9 @@ export default function GamePage() {
                 {state.status === 'playing' && (
                     <>
                         <button
-                            className={`px-3 py-2 xs:px-4 xs:py-2 sm:px-6 sm:py-3 rounded bg-white text-black border hover:bg-gray-200 transition duration-200 text-xs xs:text-sm sm:text-base font-medium ${highlight === 'hit' ? 'animate-pulse bg-yellow-200' : ''
+                            className={`px-3 py-2 xs:px-4 xs:py-2 sm:px-6 sm:py-3 rounded border transition duration-200 text-xs xs:text-sm sm:text-base font-medium ${highlight === 'hit'
+                                    ? 'bg-yellow-400 text-black hover:bg-yellow-500 border-yellow-500'
+                                    : 'bg-white text-black hover:bg-gray-200'
                                 }`}
                             onClick={hit}
                         >
@@ -442,7 +444,9 @@ export default function GamePage() {
                             ?
                         </button>
                         <button
-                            className={`px-3 py-2 xs:px-4 xs:py-2 sm:px-6 sm:py-3 rounded bg-white text-black border hover:bg-gray-200 transition duration-200 text-xs xs:text-sm sm:text-base font-medium ${highlight === 'stand' ? 'animate-pulse bg-yellow-200' : ''
+                            className={`px-3 py-2 xs:px-4 xs:py-2 sm:px-6 sm:py-3 rounded border transition duration-200 text-xs xs:text-sm sm:text-base font-medium ${highlight === 'stand'
+                                    ? 'bg-yellow-400 text-black hover:bg-yellow-500 border-yellow-500'
+                                    : 'bg-white text-black hover:bg-gray-200'
                                 }`}
                             onClick={stand}
                         >
@@ -526,22 +530,6 @@ export default function GamePage() {
     return (
         <div className="flex flex-col min-h-screen">
             <Header chips={state.chips} />
-            <style jsx>{`
-                @keyframes slideIn {
-                    from {
-                        opacity: 0;
-                        transform: translateY(-20px) scale(0.8);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0) scale(1);
-                    }
-                }
-                .animate-slideIn {
-                    animation: slideIn 0.3s ease-out forwards;
-                    opacity: 0;
-                }
-            `}</style>
 
             <div className="flex-1 flex items-center justify-center py-3 xs:py-4 sm:py-6 md:py-8">
                 <div className="w-full max-w-4xl px-2 xs:px-3 sm:px-4 flex flex-col items-center gap-3 xs:gap-4 sm:gap-6">
