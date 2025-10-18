@@ -73,7 +73,7 @@ A full-stack web application implementing the classic casino card game Blackjack
 **Backend:**
 - Next.js API Routes
 - MongoDB (database)
-- JWT authentication
+- Custom Auth (bcrypt, uuidv4)
 - Gemini API (AI assistant)
 
 **Deployment:**
